@@ -20,8 +20,10 @@
 package org.apache.neethi;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.neethi.util.PolicyComparator;
 
@@ -70,11 +72,12 @@ public abstract class AbstractPolicyOperator implements PolicyOperator {
         }
         
         
-        result.addPolicyComponent(normalizeOperator(policy,reg, deep));
+        result.addPolicyComponent(normalizeOperator(policy,reg, deep, new HashSet()));
         return result;
     }
     
-    private static PolicyComponent normalizeOperator(PolicyOperator operator, PolicyRegistry reg, boolean deep) {
+    private static PolicyComponent normalizeOperator(PolicyOperator operator, PolicyRegistry reg, boolean deep,
+                                                     Set resolving) {
                         
         short type = operator.getType();
                 
@@ -118,18 +121,24 @@ public abstract class AbstractPolicyOperator implements PolicyOperator {
                 if (policyComponent == null) {
                     throw new RuntimeException(uri + " can't be resolved");
                 }
-                
+                String resolvedId = ((Policy) policyComponent).getId();
+                if (resolvedId != null && !resolving.add(resolvedId)) {
+                    throw new RuntimeException("Circular PolicyReference detected: " + resolvedId);
+                }
                 All all = new All();
                 all.addPolicyComponents(((Policy) policyComponent).getPolicyComponents());
-                childComponentsList.add(AbstractPolicyOperator.normalizeOperator(all, reg, deep));
+                childComponentsList.add(AbstractPolicyOperator.normalizeOperator(all, reg, deep, resolving));
+                if (resolvedId != null) {
+                    resolving.remove(resolvedId);
+                }
          
             } else if (policyComponent.getType() == Constants.TYPE_POLICY) {
                 All all = new All();
                 all.addPolicyComponents(((Policy) policyComponent).getPolicyComponents());
-                childComponentsList.add(AbstractPolicyOperator.normalizeOperator(all, reg, deep));
+                childComponentsList.add(AbstractPolicyOperator.normalizeOperator(all, reg, deep, resolving));
                 
             } else {
-                childComponentsList.add(AbstractPolicyOperator.normalizeOperator((PolicyOperator) policyComponent, reg, deep));
+                childComponentsList.add(AbstractPolicyOperator.normalizeOperator((PolicyOperator) policyComponent, reg, deep, resolving));
             }            
         }
         
