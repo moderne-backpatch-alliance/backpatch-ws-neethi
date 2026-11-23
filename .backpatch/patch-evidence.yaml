@@ -1,0 +1,21 @@
+schema: osera-patch-evidence/0.1.0
+producer: moderne
+release: 2.0.5.1-backpatch-00001
+baseline: v2.0.5+backpatch.baseline
+fixes:
+  - cve: CVE-2026-42403
+    upstream_fix_url: https://github.com/apache/ws-neethi/commit/39870cf545820905939359d9ae8017b00d524e0c
+    advisory_url: https://nvd.nist.gov/vuln/detail/CVE-2026-42403
+    patch_commit_url: https://github.com/moderne-backpatch-alliance/backpatch-ws-neethi/compare/0b2baff~1...3fe57d3
+    basis: adapted
+    artifacts:
+      - org.apache.neethi:neethi
+    note: New in this release; ported onto 2.0.5; fixed at 2.0.5.1-backpatch-00001 (backpatch-ws-neethi@0b2baff..3fe57d3).
+tests:
+  commit: 3fe57d32c180cd405a4c0602ea5d4dcb9dd1c2d1
+  command: mvn -B -T1  -Dmaven.test.failure.ignore=true clean test
+  runtime: openjdk version 1.8.0_382, Apache Maven 3.9.16
+  report: neethi-2.0.5.1-backpatch-00001-tests.zip
+  report_sha256: 46c9450b83f8c711bf75fa08992122fcbe8b45c444dc0d6b8de9f42f2a5b671c
+  result: pass
+  note: 3 tests at the patch commit, 0 of them skipped by the suite, 0 failed, 0 errors.
